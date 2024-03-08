@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.2.1",
     "@vkontakte/icons": "^2.92.0",
     "@vkontakte/vkui": "^6.0.0",
     "json-server": "^1.0.0-alpha.23",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
