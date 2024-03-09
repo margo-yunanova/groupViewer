@@ -1,0 +1,17 @@
+.card {
+  display: flex;
+  flex-direction: row;
+}
+
+.description {
+  display: flex;
+  flex-direction: row;
+}
+
+.cell {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 0;
+  padding-top: 10px;
+  gap: 5px;
+}

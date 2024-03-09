@@ -16,3 +16,8 @@ interface User {
   first_name: string;
   last_name: string;
 }
+
+export enum GroupType {
+  true = "Открытая",
+  false = "Закрытая",
+}
