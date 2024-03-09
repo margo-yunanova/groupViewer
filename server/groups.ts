@@ -1,3 +1,5 @@
+import { Group } from "../src/utils/types";
+
 export default [
   {
     id: 1,
@@ -180,4 +182,4 @@ export default [
     avatar_color: "blue",
     members_count: 23,
   },
-];
+] as Group[];
