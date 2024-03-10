@@ -3,3 +3,17 @@
   align-items: center;
   justify-content: center;
 }
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

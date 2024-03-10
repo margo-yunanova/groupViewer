@@ -1,79 +1,148 @@
-import React from "react";
 import {
   SplitLayout,
   SplitCol,
-  Div,
-  View,
   Panel,
   PanelHeader,
   Group,
-  SimpleCell,
-  Placeholder,
-  PanelHeaderBack,
-  Link,
+  Spinner,
+  Select,
+  Div,
 } from "@vkontakte/vkui";
-import { Icon28UserOutline, Icon28SettingsOutline } from "@vkontakte/icons";
 import "@vkontakte/vkui/dist/vkui.css";
-import vkuiLogo from "./assets/vkui_logo.png";
 import styles from "./App.module.css";
+import { CardItem } from "./components/card-item/index";
+import { useGetGroupsQuery } from "./utils/api";
+import { ChangeEventHandler, useState } from "react";
 
-interface MainProps {
-  initialPanel: string;
-}
+type TTypeGroup = "Все" | "Открытая" | "Закрытая";
 
-export function App({ initialPanel }: MainProps) {
-  const [activePanel, setActivePanel] = React.useState(initialPanel);
+export function App() {
+  const { data, isLoading } = useGetGroupsQuery();
+
+  const [selectedGroup, setSelectedGroup] = useState<TTypeGroup>("Все");
+  const [selectedColor, setSelectedColor] = useState("Все");
+  const [selectedHavingFriends, setSelectedHavingFriends] = useState("Все");
+
+  const groupsType = ["Все", "Открытая", "Закрытая"].map((group) => ({
+    label: group,
+    value: group,
+  }));
+
+  const avatarColor = [
+    ...new Set(
+      data
+        ?.filter(({ avatar_color }) => avatar_color !== undefined)
+        .map(({ avatar_color }) => avatar_color)
+    ),
+  ]
+    .map((color) => ({
+      label: color!,
+      value: color,
+    }))
+    .concat({ label: "Любой", value: "Любой" });
+
+  const friendsInGroups = [
+    { label: "Да", value: "Да" },
+    { label: "Нет", value: "Нет" },
+    { label: "Все", value: "Все" },
+  ];
+
+  const filterGroup = (
+    typeGroup: TTypeGroup,
+    typeColor: string,
+    hasFriends: string
+  ) => {
+    return data?.filter(({ closed, avatar_color, friends }) => {
+      const typeFilter =
+        typeGroup === "Все" ||
+        (closed && typeGroup === "Открытая") ||
+        (!closed && typeGroup === "Закрытая");
+      const colorFilter = typeColor === "Все" || avatar_color === typeColor;
+      const friendsFilter =
+        hasFriends === "Все" ||
+        (friends && friends.length > 0 && hasFriends === "Да") ||
+        !friends ||
+        (friends.length === 0 && hasFriends === "Нет");
+      return typeFilter && colorFilter && friendsFilter;
+    });
+  };
+
+  const groups = filterGroup(
+    selectedGroup,
+    selectedColor,
+    selectedHavingFriends
+  );
+
+  const handleSelect: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    if (e.target.name === "private") {
+      setSelectedGroup(e.target.value as TTypeGroup);
+    } else if (e.target.name === "color") {
+      setSelectedColor(e.target.value);
+    } else {
+      setSelectedHavingFriends(e.target.value);
+    }
+  };
 
   return (
-    <SplitLayout
-      style={{ justifyContent: "center" }}
-      header={<PanelHeader delimiter="none" />}
-    >
+    <SplitLayout style={{ justifyContent: "center" }}>
+      <SplitCol width={380} maxWidth={380}>
+        <Panel>
+          <Group className={styles.filter}>
+            <Div>
+              <label htmlFor="private">По типу приватности</label>
+              <Select
+                id="private"
+                aria-label="По типу приватности"
+                placeholder="Не выбран"
+                options={groupsType}
+                onChange={handleSelect}
+                name="private"
+              />
+            </Div>
+            <Div>
+              <label htmlFor="color">По цвету аватара</label>
+              <Select
+                id="color"
+                aria-label="По цвету аватара"
+                placeholder="Не выбран"
+                options={avatarColor}
+                onChange={handleSelect}
+                name="color"
+              />
+            </Div>
+            <Div>
+              <label htmlFor="friendsInGroups">Есть ли друзья в группе</label>
+              <Select
+                id="friendsInGroups"
+                aria-label="Есть ли друзья в группе"
+                placeholder="Не выбран"
+                options={friendsInGroups}
+                onChange={handleSelect}
+                name="friendsInGroups"
+              />
+            </Div>
+          </Group>
+        </Panel>
+      </SplitCol>
+
       <SplitCol width="100%" stretchedOnMobile autoSpaced>
-        <View activePanel={activePanel}>
-          <Panel id="main">
-            <PanelHeader>VKUI</PanelHeader>
-            <Group>
-              <Div className={styles.App}>
-                <Link href="https://vkcom.github.io/VKUI" target="_blank">
-                  <img src={vkuiLogo} alt="vkui logo" height={100} />
-                </Link>
-              </Div>
-              <SimpleCell
-                onClick={() => setActivePanel("account")}
-                before={<Icon28UserOutline />}
-              >
-                Account
-              </SimpleCell>
-              <SimpleCell
-                onClick={() => setActivePanel("settings")}
-                before={<Icon28SettingsOutline />}
-              >
-                Settings
-              </SimpleCell>
-            </Group>
-          </Panel>
-          <Panel id="account">
-            <PanelHeader
-              before={
-                <PanelHeaderBack onClick={() => setActivePanel("main")} />
-              }
-            >
-              Account
-            </PanelHeader>
-            <Placeholder>The page is empty</Placeholder>
-          </Panel>
-          <Panel id="settings">
-            <PanelHeader
-              before={
-                <PanelHeaderBack onClick={() => setActivePanel("main")} />
-              }
-            >
-              Settings
-            </PanelHeader>
-            <Placeholder>The page is empty</Placeholder>
-          </Panel>
-        </View>
+        {isLoading && (
+          <Spinner size="large" aria-busy aria-live="polite">
+            Загружается...
+          </Spinner>
+        )}
+        <Panel>
+          <PanelHeader>Группы</PanelHeader>
+          <Group>
+            <ul className={styles.list}>
+              {groups?.map((group) => (
+                <li key={group.id}>
+                  <CardItem {...group} />
+                </li>
+              ))}
+            </ul>
+          </Group>
+        </Panel>
       </SplitCol>
     </SplitLayout>
   );
