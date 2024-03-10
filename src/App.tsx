@@ -60,9 +60,8 @@ export function App() {
       const colorFilter = typeColor === "Все" || avatar_color === typeColor;
       const friendsFilter =
         hasFriends === "Все" ||
-        (friends && friends.length > 0 && hasFriends === "Да") ||
-        !friends ||
-        (friends.length === 0 && hasFriends === "Нет");
+        (friends && hasFriends === "Да") ||
+        (!friends && hasFriends === "Нет");
       return typeFilter && colorFilter && friendsFilter;
     });
   };
