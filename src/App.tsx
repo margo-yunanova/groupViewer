@@ -7,12 +7,13 @@ import {
   Spinner,
   Select,
   Div,
+  Text,
 } from "@vkontakte/vkui";
 import "@vkontakte/vkui/dist/vkui.css";
 import styles from "./App.module.css";
 import { CardItem } from "./components/card-item/index";
 import { useGetGroupsQuery } from "./utils/api";
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, useMemo, useState } from "react";
 
 type TTypeGroup = "Все" | "Открытая" | "Закрытая";
 
@@ -20,7 +21,7 @@ export function App() {
   const { data, isLoading } = useGetGroupsQuery();
 
   const [selectedGroup, setSelectedGroup] = useState<TTypeGroup>("Все");
-  const [selectedColor, setSelectedColor] = useState("Все");
+  const [selectedColor, setSelectedColor] = useState("Любой");
   const [selectedHavingFriends, setSelectedHavingFriends] = useState("Все");
 
   const groupsType = ["Все", "Открытая", "Закрытая"].map((group) => ({
@@ -29,47 +30,43 @@ export function App() {
   }));
 
   const avatarColor = [
+    "Любой",
     ...new Set(
       data
         ?.filter(({ avatar_color }) => avatar_color !== undefined)
         .map(({ avatar_color }) => avatar_color)
+        .sort()
     ),
-  ]
-    .map((color) => ({
-      label: color!,
-      value: color,
-    }))
-    .concat({ label: "Любой", value: "Любой" });
+  ].map((color) => ({
+    label: color!,
+    value: color,
+  }));
 
   const friendsInGroups = [
+    { label: "Все", value: "Все" },
     { label: "Да", value: "Да" },
     { label: "Нет", value: "Нет" },
-    { label: "Все", value: "Все" },
   ];
 
-  const filterGroup = (
-    typeGroup: TTypeGroup,
-    typeColor: string,
-    hasFriends: string
-  ) => {
-    return data?.filter(({ closed, avatar_color, friends }) => {
-      const typeFilter =
-        typeGroup === "Все" ||
-        (closed && typeGroup === "Открытая") ||
-        (!closed && typeGroup === "Закрытая");
-      const colorFilter = typeColor === "Все" || avatar_color === typeColor;
-      const friendsFilter =
-        hasFriends === "Все" ||
-        (friends && hasFriends === "Да") ||
-        (!friends && hasFriends === "Нет");
-      return typeFilter && colorFilter && friendsFilter;
-    });
-  };
+  const groups = useMemo(
+    () =>
+      data?.filter(({ closed, avatar_color, friends }) => {
+        const typeFilter =
+          selectedGroup === "Все" ||
+          (closed && selectedGroup === "Открытая") ||
+          (!closed && selectedGroup === "Закрытая");
 
-  const groups = filterGroup(
-    selectedGroup,
-    selectedColor,
-    selectedHavingFriends
+        const colorFilter =
+          selectedColor === "Любой" || avatar_color === selectedColor;
+
+        const friendsFilter =
+          selectedHavingFriends === "Все" ||
+          (friends && selectedHavingFriends === "Да") ||
+          (!friends && selectedHavingFriends === "Нет");
+
+        return typeFilter && colorFilter && friendsFilter;
+      }),
+    [selectedGroup, selectedColor, selectedHavingFriends, data]
   );
 
   const handleSelect: ChangeEventHandler<HTMLSelectElement> = (e) => {
@@ -134,11 +131,15 @@ export function App() {
           <PanelHeader>Группы</PanelHeader>
           <Group>
             <ul className={styles.list}>
-              {groups?.map((group) => (
-                <li key={group.id}>
-                  <CardItem {...group} />
-                </li>
-              ))}
+              {groups && groups?.length > 0 ? (
+                groups?.map((group) => (
+                  <li key={group.id}>
+                    <CardItem {...group} />
+                  </li>
+                ))
+              ) : (
+                <Text>Нет подходящих вариантов</Text>
+              )}
             </ul>
           </Group>
         </Panel>
