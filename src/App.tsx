@@ -1,6 +1,4 @@
 import {
-  SplitLayout,
-  SplitCol,
   Panel,
   PanelHeader,
   Group,
@@ -8,6 +6,9 @@ import {
   Select,
   Div,
   Text,
+  View,
+  FixedLayout,
+  Separator,
 } from "@vkontakte/vkui";
 import "@vkontakte/vkui/dist/vkui.css";
 import styles from "./App.module.css";
@@ -29,18 +30,22 @@ export function App() {
     value: group,
   }));
 
-  const avatarColor = [
-    "Любой",
-    ...new Set(
-      data
-        ?.filter(({ avatar_color }) => avatar_color !== undefined)
-        .map(({ avatar_color }) => avatar_color)
-        .sort()
-    ),
-  ].map((color) => ({
-    label: color!,
-    value: color,
-  }));
+  const avatarColor = useMemo(
+    () =>
+      [
+        "Любой",
+        ...new Set(
+          data
+            ?.filter(({ avatar_color }) => avatar_color !== undefined)
+            .map(({ avatar_color }) => avatar_color)
+            .sort()
+        ),
+      ].map((color) => ({
+        label: color!,
+        value: color,
+      })),
+    [data]
+  );
 
   const friendsInGroups = [
     { label: "Все", value: "Все" },
@@ -80,9 +85,10 @@ export function App() {
   };
 
   return (
-    <SplitLayout style={{ justifyContent: "center" }}>
-      <SplitCol width={380} maxWidth={380}>
-        <Panel>
+    <View activePanel="fixedLayout">
+      <Panel id="fixedLayout">
+        <FixedLayout vertical="top" filled>
+          <PanelHeader fixed>Группы</PanelHeader>
           <Group className={styles.filter}>
             <Div>
               <label htmlFor="private">По типу приватности</label>
@@ -118,32 +124,29 @@ export function App() {
               />
             </Div>
           </Group>
-        </Panel>
-      </SplitCol>
+          <Separator wide />
+        </FixedLayout>
 
-      <SplitCol width="100%" stretchedOnMobile autoSpaced>
-        {isLoading && (
-          <Spinner size="large" aria-busy aria-live="polite">
-            Загружается...
-          </Spinner>
-        )}
-        <Panel>
-          <PanelHeader>Группы</PanelHeader>
-          <Group>
-            <ul className={styles.list}>
-              {groups && groups?.length > 0 ? (
-                groups?.map((group) => (
-                  <li key={group.id}>
-                    <CardItem {...group} />
-                  </li>
-                ))
-              ) : (
-                <Text>Нет подходящих вариантов</Text>
-              )}
-            </ul>
-          </Group>
-        </Panel>
-      </SplitCol>
-    </SplitLayout>
+        <Group>
+          {isLoading && (
+            <Spinner size="large" aria-busy aria-live="polite">
+              Загружается...
+            </Spinner>
+          )}
+
+          <ul className={styles.list}>
+            {groups && groups?.length > 0 ? (
+              groups?.map((group) => (
+                <li key={group.id}>
+                  <CardItem {...group} />
+                </li>
+              ))
+            ) : (
+              <Text>Нет подходящих вариантов</Text>
+            )}
+          </ul>
+        </Group>
+      </Panel>
+    </View>
   );
 }

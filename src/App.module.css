@@ -10,10 +10,19 @@
   gap: 10px;
   list-style: none;
   padding-inline-start: 0;
+  padding-top: 170px;
+
+  @media (max-width: 650px) {
+    padding-top: 320px;
+  }
 }
 
 .filter {
   display: flex;
-  flex-direction: column;
   gap: 10px;
+
+  @media (max-width: 650px) {
+    flex-direction: column;
+    gap: 0px;
+  }
 }

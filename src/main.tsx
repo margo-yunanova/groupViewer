@@ -9,7 +9,7 @@ createRoot(document.getElementById("root")!).render(
     <ConfigProvider>
       <AdaptivityProvider>
         <AppRoot>
-          <App initialPanel="main" />
+          <App />
         </AppRoot>
       </AdaptivityProvider>
     </ConfigProvider>
