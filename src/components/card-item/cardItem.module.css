@@ -1,0 +1,21 @@
+.card {
+  display: flex;
+  flex-direction: row;
+}
+
+.description {
+  display: flex;
+  flex-direction: row;
+
+  @media (max-width: 650px) {
+    flex-direction: column;
+  }
+}
+
+.cell {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 0;
+  padding-top: 10px;
+  gap: 5px;
+}
