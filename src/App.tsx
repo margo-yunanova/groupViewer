@@ -14,16 +14,16 @@ import "@vkontakte/vkui/dist/vkui.css";
 import styles from "./App.module.css";
 import { CardItem } from "./components/card-item/index";
 import { useGetGroupsQuery } from "./utils/api";
-import { ChangeEventHandler, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type TTypeGroup = "Все" | "Открытая" | "Закрытая";
 
 export function App() {
-  const { data, isLoading } = useGetGroupsQuery();
+  const { data, isLoading, isError } = useGetGroupsQuery();
 
   const [selectedGroup, setSelectedGroup] = useState<TTypeGroup>("Все");
   const [selectedColor, setSelectedColor] = useState("Любой");
-  const [selectedHavingFriends, setSelectedHavingFriends] = useState("Все");
+  const [selectedHavingFriends, setSelectedHavingFriends] = useState("Неважно");
 
   const groupsType = ["Все", "Открытая", "Закрытая"].map((group) => ({
     label: group,
@@ -48,7 +48,7 @@ export function App() {
   );
 
   const friendsInGroups = [
-    { label: "Все", value: "Все" },
+    { label: "Неважно", value: "Неважно" },
     { label: "Да", value: "Да" },
     { label: "Нет", value: "Нет" },
   ];
@@ -58,31 +58,21 @@ export function App() {
       data?.filter(({ closed, avatar_color, friends }) => {
         const typeFilter =
           selectedGroup === "Все" ||
-          (closed && selectedGroup === "Открытая") ||
-          (!closed && selectedGroup === "Закрытая");
+          (selectedGroup === "Открытая" && closed) ||
+          (selectedGroup === "Закрытая" && !closed);
 
         const colorFilter =
           selectedColor === "Любой" || avatar_color === selectedColor;
 
         const friendsFilter =
-          selectedHavingFriends === "Все" ||
-          (friends && selectedHavingFriends === "Да") ||
-          (!friends && selectedHavingFriends === "Нет");
+          selectedHavingFriends === "Неважно" ||
+          (selectedHavingFriends === "Да" && friends) ||
+          (selectedHavingFriends === "Нет" && !friends);
 
         return typeFilter && colorFilter && friendsFilter;
       }),
     [selectedGroup, selectedColor, selectedHavingFriends, data]
   );
-
-  const handleSelect: ChangeEventHandler<HTMLSelectElement> = (e) => {
-    if (e.target.name === "private") {
-      setSelectedGroup(e.target.value as TTypeGroup);
-    } else if (e.target.name === "color") {
-      setSelectedColor(e.target.value);
-    } else {
-      setSelectedHavingFriends(e.target.value);
-    }
-  };
 
   return (
     <View activePanel="fixedLayout">
@@ -95,9 +85,9 @@ export function App() {
               <Select
                 id="private"
                 aria-label="По типу приватности"
-                placeholder="Не выбран"
+                value={selectedGroup}
                 options={groupsType}
-                onChange={handleSelect}
+                onChange={(e) => setSelectedGroup(e.target.value as TTypeGroup)}
                 name="private"
               />
             </Div>
@@ -106,9 +96,9 @@ export function App() {
               <Select
                 id="color"
                 aria-label="По цвету аватара"
-                placeholder="Не выбран"
+                value={selectedColor}
                 options={avatarColor}
-                onChange={handleSelect}
+                onChange={(e) => setSelectedColor(e.target.value)}
                 name="color"
               />
             </Div>
@@ -117,9 +107,9 @@ export function App() {
               <Select
                 id="friendsInGroups"
                 aria-label="Есть ли друзья в группе"
-                placeholder="Не выбран"
+                value={selectedHavingFriends}
                 options={friendsInGroups}
-                onChange={handleSelect}
+                onChange={(e) => setSelectedHavingFriends(e.target.value)}
                 name="friendsInGroups"
               />
             </Div>
@@ -145,8 +135,10 @@ export function App() {
                     <CardItem {...group} />
                   </li>
                 ))
-              ) : (
+              ) : !isError ? (
                 <Text>Нет подходящих вариантов</Text>
+              ) : (
+                <Text>Не удалось загрузить данные. Обновите страницу</Text>
               )}
             </ul>
           )}

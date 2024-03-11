@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import groups from "../../server/groups.ts";
 import { GetGroupsResponse, Group } from "./types.ts";
+import { getResponseAfterDelay } from "./utils.ts";
 
 export const groupsApi = createApi({
   reducerPath: "groupsApi",
@@ -9,10 +10,9 @@ export const groupsApi = createApi({
   endpoints: (build) => ({
     getGroups: build.query<Group[], void>({
       queryFn: async () => {
-        const { result, data }: GetGroupsResponse = await new Promise(
-          (resolve) => {
-            setTimeout(() => resolve({ result: 1, data: groups }), 1000);
-          }
+        const { result, data }: GetGroupsResponse = await getResponseAfterDelay(
+          { result: 1, data: groups },
+          1000
         );
 
         if (data && result === 1) return { data };
