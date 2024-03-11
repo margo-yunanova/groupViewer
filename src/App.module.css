@@ -26,3 +26,11 @@
     gap: 0px;
   }
 }
+
+.spinner {
+  padding-top: 340px;
+
+  @media (max-width: 650px) {
+    padding-top: 420px;
+  }
+}

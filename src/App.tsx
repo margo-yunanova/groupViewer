@@ -128,23 +128,28 @@ export function App() {
         </FixedLayout>
 
         <Group>
-          {isLoading && (
-            <Spinner size="large" aria-busy aria-live="polite">
+          {isLoading ? (
+            <Spinner
+              size="large"
+              aria-busy
+              aria-live="polite"
+              className={styles.spinner}
+            >
               Загружается...
             </Spinner>
+          ) : (
+            <ul className={styles.list}>
+              {groups && groups?.length > 0 ? (
+                groups?.map((group) => (
+                  <li key={group.id}>
+                    <CardItem {...group} />
+                  </li>
+                ))
+              ) : (
+                <Text>Нет подходящих вариантов</Text>
+              )}
+            </ul>
           )}
-
-          <ul className={styles.list}>
-            {groups && groups?.length > 0 ? (
-              groups?.map((group) => (
-                <li key={group.id}>
-                  <CardItem {...group} />
-                </li>
-              ))
-            ) : (
-              <Text>Нет подходящих вариантов</Text>
-            )}
-          </ul>
         </Group>
       </Panel>
     </View>
