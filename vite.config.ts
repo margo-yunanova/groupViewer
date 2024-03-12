@@ -1,12 +1,12 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 function handleModuleDirectivesPlugin() {
   return {
-    name: 'handle-module-directives-plugin',
+    name: "handle-module-directives-plugin",
     transform(code, id) {
-      if (id.includes('@vkontakte/icons')) {
-        code = code.replace(/"use-client";?/g, '');
+      if (id.includes("@vkontakte/icons")) {
+        code = code.replace(/"use-client";?/g, "");
       }
       return { code };
     },
@@ -18,6 +18,7 @@ export default defineConfig({
   plugins: [react(), handleModuleDirectivesPlugin()],
 
   build: {
-    outDir: 'build',
+    outDir: "build",
   },
+  base: "/groupViewer",
 });
